@@ -44,7 +44,8 @@ const tableModelCoreOptions = {
       { 'Even': 'fixed' },
       { 'Auto': 'auto' }
     ],
-    default: "fixed",
+    /* default: "fixed", */
+    default: "auto",
     order: 3,
   },
   minWidthForIndexColumns: {
@@ -337,6 +338,16 @@ class VisPluginTableModel {
         default: false,
         order: i * 10 + 3,
       }
+
+      newOptions['freeze|' + dimension.name] = {
+        section: 'Dimensions',
+        type: 'boolean',
+        label: 'Freeze',
+        display_size: 'third',
+        default: false,
+        order: i * 10 + 4,
+      }
+
 
       if (i < this.dimensions.length - 1) {
         var subtotal_option = {}

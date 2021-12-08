@@ -38,6 +38,15 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
   const chartCentreX = bounds.x + (bounds.width / 2);
   const chartCentreY = bounds.y + (bounds.height / 2);
 
+  /* console.log(config); */
+  const freezeCols = [];
+  Object.keys(config).forEach(prop => {
+     if (prop.split('|')[0] === 'freeze'){
+        freezeCols.push(prop.split('|')[1]);
+     }
+  })
+  console.log(freezeCols);
+
   removeStyles().then(() => {
     if (typeof config.customTheme !== 'undefined' && config.customTheme && config.theme === 'custom') {
       loadStylesheet(config.customTheme)
@@ -64,6 +73,7 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
         .attr('id', 'reportTable')
         .attr('class', 'reportTable')
         .style('opacity', 0)
+        /* .style('position', 'relative') */
 
     var drag = d3.drag()
       .on('start', (source, idx) => {
@@ -129,6 +139,7 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
       .data(dataTable.getTableColumnGroups()).enter()  
         .append('colgroup')
 
+
     column_groups.selectAll('col')
       .data(d => d).enter()
         .append('col')
@@ -163,6 +174,47 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
       })
       .style('text-align', d => d.align)
       .style('font-size', config.headerFontSize + 'px')
+      .style('position', d => {
+
+           if (d.type === 'heading' || d.type === 'field'){
+              return 'sticky'
+           }
+           else{
+              return ''
+           }
+       })
+       .style('position', d => {
+           if (d.type === 'heading' || d.type === 'field'){
+              return '-webkit-sticky'
+           }
+           else{
+              return ''
+           }
+       })
+      .style('top', d => {
+           if (d.type === 'heading' || d.type === 'field'){
+              return '0'
+           }
+           else{
+              return ''
+           }
+       })
+       .style('background', d => {
+           if (d.type === 'heading' || d.type === 'field'){
+              return 'white'
+           }
+           else{
+              return ''
+           }
+       })
+       .style('z-index', d => {
+           if (d.type === 'heading' || d.type === 'field'){
+              return '10'
+           }
+           else{
+              return ''
+           }
+       })
       .attr('draggable', true)
       .call(drag)
       .on('mouseover', cell => dropTarget = cell)
@@ -189,6 +241,7 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
 
     table_rows.append('td')
       .text(d => {
+        //console.log(d);
         var text = ''
         if (Array.isArray(d.value)) {                     // cell is a list or number_list
           text = !(d.rendered === null) ? d.rendered : d.value.join(' ')
@@ -210,6 +263,39 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
       .attr('colspan', d => d.colspan)
       .style('text-align', d => d.align)
       .style('font-size', config.bodyFontSize + 'px')
+      .style('position', d => {
+           if (freezeCols.includes(d.colid)){
+              console.log("hit " + d);
+              return 'sticky'
+           }
+           else{
+              return ''
+           }
+       })
+       .style('position', d => {
+           if (freezeCols.includes(d.colid)){
+              return '-webkit-sticky'
+           }
+           else{
+              return ''
+           }
+       })
+      .style('left', d => {
+           if (freezeCols.includes(d.colid)){
+              return '0'
+           }
+           else{
+              return ''
+           }
+       })
+       .style('background', d => {
+           if (freezeCols.includes(d.colid)){
+              return 'white'
+           }
+           else{
+              return ''
+           }
+       })
       .attr('class', d => {
         var classes = ['reportTable']
         if (typeof d.value === 'object') { classes.push('cellSeries') }
