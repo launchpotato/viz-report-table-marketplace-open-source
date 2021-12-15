@@ -38,15 +38,6 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
   const chartCentreX = bounds.x + (bounds.width / 2);
   const chartCentreY = bounds.y + (bounds.height / 2);
 
-  /* console.log(config); */
-  const freezeCols = [];
-  Object.keys(config).forEach(prop => {
-     if (prop.split('|')[0] === 'freeze'){
-        freezeCols.push(prop.split('|')[1]);
-     }
-  })
-  console.log(freezeCols);
-
   removeStyles().then(() => {
     if (typeof config.customTheme !== 'undefined' && config.customTheme && config.theme === 'custom') {
       loadStylesheet(config.customTheme)
@@ -172,49 +163,32 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
         if (typeof d.cell_style !== 'undefined') { classes = classes.concat(d.cell_style) }
         return classes.join(' ')
       })
+      .attr('style', d => {
+            //if (d.type === 'heading' || d.type === 'field'){
+            if (d.type === 'field'){
+              if (config['freeze|'+d.column.id] === true){
+                 return 'position:sticky;position:-webkit-sticky;top:0;background:#DAD9D9;z-index:100;left:0;'
+              }
+              else{
+                return 'position:sticky;position:-webkit-sticky;top:0;background:white;z-index:10;'
+              }
+
+           }
+           else{
+              return ''
+           }
+       })
+      .style('width', d => {
+           /* if (d.type === 'field'){ */
+               if (config['colwidth|'+d.column.id] !== undefined && Number.isInteger(config['colwidth|'+d.column.id])){
+                  return config['colwidth|'+d.column.id].toString()+'px'
+               }
+               /* else {return ''} */
+           /* } */
+           else {return ''}
+       })
       .style('text-align', d => d.align)
       .style('font-size', config.headerFontSize + 'px')
-      .style('position', d => {
-
-           if (d.type === 'heading' || d.type === 'field'){
-              return 'sticky'
-           }
-           else{
-              return ''
-           }
-       })
-       .style('position', d => {
-           if (d.type === 'heading' || d.type === 'field'){
-              return '-webkit-sticky'
-           }
-           else{
-              return ''
-           }
-       })
-      .style('top', d => {
-           if (d.type === 'heading' || d.type === 'field'){
-              return '0'
-           }
-           else{
-              return ''
-           }
-       })
-       .style('background', d => {
-           if (d.type === 'heading' || d.type === 'field'){
-              return 'white'
-           }
-           else{
-              return ''
-           }
-       })
-       .style('z-index', d => {
-           if (d.type === 'heading' || d.type === 'field'){
-              return '10'
-           }
-           else{
-              return ''
-           }
-       })
       .attr('draggable', true)
       .call(drag)
       .on('mouseover', cell => dropTarget = cell)
@@ -261,41 +235,16 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
       }) 
       .attr('rowspan', d => d.rowspan)
       .attr('colspan', d => d.colspan)
+      .attr('style', d => {
+            if (config['freeze|'+d.colid] === true){
+              return 'position:sticky;position:-webkit-sticky;left:0;background:#DAD9D9;'
+           }
+           else{
+              return ''
+           }
+       })
       .style('text-align', d => d.align)
       .style('font-size', config.bodyFontSize + 'px')
-      .style('position', d => {
-           if (freezeCols.includes(d.colid)){
-              console.log("hit " + d);
-              return 'sticky'
-           }
-           else{
-              return ''
-           }
-       })
-       .style('position', d => {
-           if (freezeCols.includes(d.colid)){
-              return '-webkit-sticky'
-           }
-           else{
-              return ''
-           }
-       })
-      .style('left', d => {
-           if (freezeCols.includes(d.colid)){
-              return '0'
-           }
-           else{
-              return ''
-           }
-       })
-       .style('background', d => {
-           if (freezeCols.includes(d.colid)){
-              return 'white'
-           }
-           else{
-              return ''
-           }
-       })
       .attr('class', d => {
         var classes = ['reportTable']
         if (typeof d.value === 'object') { classes.push('cellSeries') }
@@ -508,6 +457,22 @@ const buildReportTable = function(config, dataTable, updateColumnOrder, element)
     }
   })
 
+  /* console.log(d3.select('#athena_hasoffers_offer_tagging.vertical.field').node()); */
+  /*
+  d3.selectAll("th").each(function(e) {
+      try{
+
+         if (config['freeze|'+e.column.id] === true){
+             // console.log(d3.select(this).node().getBoundingClientRect().left)
+             d3.select("#athena_hasoffers_firehose_events.source.field").style('left', d3.select(this).node().getBoundingClientRect().left)
+             // e.style('left', parseInt(d3.select(this).node().getBoundingClientRect().left).toString())
+         }
+      }
+      catch (error) { console.log(error) }
+  });
+  */
+
+
 }
 
 looker.plugins.visualizations.add({
@@ -531,8 +496,6 @@ looker.plugins.visualizations.add({
     const updateColumnOrder = newOrder => {
       this.trigger('updateConfig', [{ columnOrder: newOrder }])
     }
-
-
 
     // ERROR HANDLING
 
@@ -581,10 +544,10 @@ looker.plugins.visualizations.add({
     // 2. Register options
     // 3. Build vis
 
-    // console.log(config)
     var dataTable = new VisPluginTableModel(data, queryResponse, config)
     this.trigger('registerOptions', dataTable.getConfigOptions())
     buildReportTable(config, dataTable, updateColumnOrder, element)
+
 
     // DEBUG OUTPUT AND DONE
     // console.log('dataTable', dataTable)

@@ -310,6 +310,7 @@ class VisPluginTableModel {
    * Returns a new config object, combining the core options with dynamic options based on available dimensions and measures
    */
   getConfigOptions() {
+
     var newOptions = tableModelCoreOptions
 
     var subtotal_options = []
@@ -330,13 +331,21 @@ class VisPluginTableModel {
         order: i * 10 + 2,
       }
 
+      newOptions['colwidth|' + dimension.name] = {
+        section: 'Dimensions',
+        type: 'number',
+        label: 'Column Length Px',
+        default: '',
+        order: i * 10 + 3,
+      }
+
       newOptions['hide|' + dimension.name] = {
         section: 'Dimensions',
         type: 'boolean',
         label: 'Hide',
         display_size: 'third',
         default: false,
-        order: i * 10 + 3,
+        order: i * 10 + 4,
       }
 
       newOptions['freeze|' + dimension.name] = {
@@ -345,8 +354,9 @@ class VisPluginTableModel {
         label: 'Freeze',
         display_size: 'third',
         default: false,
-        order: i * 10 + 4,
+        order: i * 10 + 5,
       }
+
 
 
       if (i < this.dimensions.length - 1) {
@@ -383,6 +393,14 @@ class VisPluginTableModel {
         order: 100 + i * 10 + 2,
       }
 
+      newOptions['colwidth|' +  measure.name] = {
+        section: 'Measures',
+        type: 'number',
+        label: 'Column Length Px',
+        default: '',
+        order: 100 + i * 10 + 3,
+      }
+
       newOptions['style|' + measure.name] = {
         section: 'Measures',
         type: 'string',
@@ -396,7 +414,7 @@ class VisPluginTableModel {
           {'Hidden': 'hide'}
         ],
         default: 'normal',
-        order: 100 + i * 10 + 3
+        order: 100 + i * 10 + 4
       }
 
       newOptions['reportIn|' + measure.name] = {
@@ -412,7 +430,7 @@ class VisPluginTableModel {
           {'Billions': '1000000000'}
         ],
         default: '1',
-        order: 100 + i * 10 + 3.5
+        order: 100 + i * 10 + 4.5
       }
 
       newOptions['unit|' + measure.name] = {
@@ -422,7 +440,7 @@ class VisPluginTableModel {
         // display: 'select',
         display_size: 'third',
         default: '',
-        order: 100 + i * 10 + 3.7
+        order: 100 + i * 10 + 4.7
       }
 
       var comparisonOptions = []
@@ -489,6 +507,7 @@ class VisPluginTableModel {
         order: 100 + i * 10 + 8,
       }
     })
+
     return newOptions
   }
 
